@@ -224,7 +224,7 @@ export class ModelClient {
    */
   async callDoubaoAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint) {
     // 使用豆包API
-    const apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3/';
+    const apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
 
     const requestData = {
       model,
@@ -248,10 +248,11 @@ export class ModelClient {
       ]
     };
 
-    const response = await this.makeHttpRequest(apiEndpoint, {
+    const response = await this.makeHttpRequest(`${apiEndpoint}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(JSON.stringify(requestData)),
         'Authorization': `Bearer ${this.apiKey}`
       },
       body: JSON.stringify(requestData)
@@ -282,7 +283,6 @@ export class ModelClient {
         port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
         path: urlObj.pathname + urlObj.search
       };
-
       const req = client.request(requestOptions, (res) => {
         let data = '';
         res.on('data', (chunk) => {
@@ -291,8 +291,12 @@ export class ModelClient {
 
         res.on('end', () => {
           try {
-            const parsedData = JSON.parse(data);
-            resolve(parsedData);
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              const parsedData = JSON.parse(data);
+              resolve(parsedData);
+          } else {
+              reject(new Error(`请求失败，状态码: ${res.statusCode}, 响应: ${data}`));
+          }
           } catch (e) {
             reject(new Error(`API响应解析失败: ${e.message}, 原始响应: ${data}`));
           }
