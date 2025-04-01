@@ -68,7 +68,8 @@ async function testFullProcess() {
       model: CONFIG.model,
       verbose: CONFIG.verbose,
       gptWorker: CONFIG.concurrency,
-      useFullPage: CONFIG.useFullPage // 添加useFullPage参数
+      useFullPage: CONFIG.useFullPage, // 添加useFullPage参数
+      concurrency: CONFIG.concurrency,
     });
 
     const endTime = Date.now();

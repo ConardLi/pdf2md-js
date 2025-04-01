@@ -216,6 +216,75 @@ export const isValidRect = (rect) => {
   }
 };
 
+// 从 LLM 输出中提取标题
+export const extractMdFromLLMOutput = (output) => {
+  const mdStart = output.indexOf('```markdown');
+  const mdEnd = output.lastIndexOf('```');
+  if (mdStart !== -1 && mdEnd !== -1) {
+    const mdString = output.substring(mdStart + 12, mdEnd)
+    return mdString;
+  } else {
+    console.error('模型未按标准格式输出:', output);
+    return undefined;
+  }
+}
+
+//获取优化前的 markdwon 标题
+export const getOldMarkdownHeadings = (markdownText) => {
+  const title = [];
+  const lines = markdownText.split('\n');
+  lines.forEach((line) => {
+    // 匹配 # 开头，并捕获后面的内容
+    const match = line.match(/^#+\s*(.*)/);
+    if (match) {
+      title.push(line);
+    }
+  })
+  return title.join('\n');;
+}
+
+//根据新生成的标题结构，重新设置原文章中标题级别
+export const adjustMarkdownHeadings = (markdownText, newTitle) => {
+  const map = createTitleLevelMap(newTitle);
+  const lines = markdownText.split('\n');
+  const processedLines = [];
+  lines.forEach((line) => {
+    // 匹配 # 开头，并捕获后面的内容
+    const match = line.match(/^#+\s*(.*)/);
+    if (!match) {
+      processedLines.push(line);
+      return;
+    }
+    const content = match ? match[1] : line;
+    // 检查 content 是否在 map 中存在
+    let newLine = line;
+    if (map.has(content)) {
+      const level = map.get(content);
+      // 生成对应数量的 #（例如 level=2 -> "##"）
+      const hashes = '#'.repeat(level);
+      newLine = `${hashes} ${content}`;
+      console.log("转换前：" + line + "===>转换后" + newLine);
+    }
+    processedLines.push(newLine);
+  });
+  return processedLines.join('\n');
+}
+
+//根据标题#数量，建立内容和数量的map映射
+function createTitleLevelMap(data, map = new Map()) {
+  const lines = data.split('\n');
+  for (const line of lines) {
+    // 匹配以#开头的标题行
+    const headerMatch = line.match(/^(#+)\s*(.+)/);
+    if (headerMatch) {
+      const level = headerMatch[1].length; // #号的数量
+      const text = headerMatch[2].trim();  // #号后的文本内容
+      map.set(text, level);
+    }
+  }
+  return map;
+}
+
 export default {
   ensureDir,
   createRect,
@@ -225,5 +294,8 @@ export default {
   unionRects,
   generateRandomFileName,
   removeFile,
-  isValidRect
+  isValidRect,
+  extractMdFromLLMOutput,
+  adjustMarkdownHeadings,
+  getOldMarkdownHeadings
 };

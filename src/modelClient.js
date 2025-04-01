@@ -68,8 +68,12 @@ export class ModelClient {
     } = options;
 
     // 读取图像文件
-    const imageBuffer = await fs.readFile(imagePath);
-    const base64Image = imageBuffer.toString('base64');
+    let base64Image = null;
+    if(imagePath){
+      const imageBuffer = await fs.readFile(imagePath);
+      base64Image = imageBuffer.toString('base64');
+    }
+    
 
     // 根据不同模型类型调用对应API
     if (model.startsWith('gpt-4') || model.startsWith('gpt-3.5')) {
@@ -94,6 +98,19 @@ export class ModelClient {
     // 使用OpenAI API
     const apiEndpoint = endpoint || 'https://api.openai.com/v1/chat/completions';
 
+    // 构建用户消息内容
+    const userContent = [{ type: 'text', text: prompt }];
+
+    // 如果有base64图片，添加图片内容
+    if (base64Image) {
+      userContent.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/png;base64,${base64Image}`
+        }
+      });
+    }
+
     const requestData = {
       model,
       messages: [
@@ -103,15 +120,7 @@ export class ModelClient {
         },
         {
           role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:image/png;base64,${base64Image}`
-              }
-            }
-          ]
+          content: userContent
         }
       ],
       max_tokens: maxTokens
@@ -141,6 +150,21 @@ export class ModelClient {
     // 使用Claude API
     const apiEndpoint = endpoint || 'https://api.anthropic.com/v1/messages';
 
+    // 构建消息内容
+    const messageContent = [{ type: 'text', text: prompt }];
+
+    // 如果有base64图片，添加图片内容
+    if (base64Image) {
+      messageContent.push({
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: 'image/png',
+          data: base64Image
+        }
+      });
+    }
+
     const requestData = {
       model,
       system: rolePrompt,
@@ -148,10 +172,7 @@ export class ModelClient {
       messages: [
         {
           role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            { type: 'image', source: { type: 'base64', media_type: 'image/png', data: base64Image } }
-          ]
+          content: messageContent
         }
       ]
     };
@@ -181,20 +202,25 @@ export class ModelClient {
     // 使用Google Gemini API
     const apiEndpoint = endpoint || `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`;
 
-    const requestData = {
-      contents: [
-        {
-          parts: [
-            { text: `${rolePrompt}\n${prompt}` },
-            {
-              inline_data: {
-                mime_type: 'image/png',
-                data: base64Image
-              }
-            }
-          ]
+    // 构建消息部分
+    const parts = [
+      { text: `${rolePrompt}\n${prompt}` }  // 合并系统提示和用户提示
+    ];
+
+    // 如果有base64图片，添加图片内容
+    if (base64Image) {
+      parts.push({
+        inline_data: {
+          mime_type: 'image/png', // 可以根据实际情况调整MIME类型
+          data: base64Image
         }
-      ],
+      });
+    }
+
+    const requestData = {
+      contents: [{
+        parts: parts
+      }],
       generation_config: {
         max_output_tokens: maxTokens
       }
@@ -226,6 +252,19 @@ export class ModelClient {
     // 使用豆包API
     const apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
 
+    // 构建用户消息内容
+    const userContent = [{ type: 'text', text: prompt }];
+
+    // 如果有base64图片，添加图片内容
+    if (base64Image) {
+      userContent.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/png;base64,${base64Image}`
+        }
+      });
+    }
+
     const requestData = {
       model,
       messages: [
@@ -235,17 +274,10 @@ export class ModelClient {
         },
         {
           role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:image/png;base64,${base64Image}`
-              }
-            }
-          ]
+          content: userContent
         }
-      ]
+      ],
+      max_tokens: maxTokens  // 添加max_tokens参数
     };
 
     const response = await this.makeHttpRequest(`${apiEndpoint}/chat/completions`, {
@@ -294,9 +326,9 @@ export class ModelClient {
             if (res.statusCode >= 200 && res.statusCode < 300) {
               const parsedData = JSON.parse(data);
               resolve(parsedData);
-          } else {
+            } else {
               reject(new Error(`请求失败，状态码: ${res.statusCode}, 响应: ${data}`));
-          }
+            }
           } catch (e) {
             reject(new Error(`API响应解析失败: ${e.message}, 原始响应: ${data}`));
           }
