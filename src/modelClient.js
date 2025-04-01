@@ -64,7 +64,7 @@ export class ModelClient {
       model = this.config.model,
       rolePrompt = DEFAULT_ROLE_PROMPT,
       maxTokens = 4096,
-      endpoint = this.config.endpoint
+      endpoint = this.config.baseUrl
     } = options;
 
     // 读取图像文件
