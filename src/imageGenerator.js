@@ -238,7 +238,7 @@ export const generateFullPageImages = async (pdfData, outputDir, scale = 3) => {
     await fs.writeFile(imagePath, buffer);
     
     // 添加到结果数组
-    pageImages.push(imagePath);
+    pageImages.push({"index":pageIndex,"path":imagePath});
     
     console.log(`页面 ${pageIndex} 已保存到: ${imagePath}`);
   }

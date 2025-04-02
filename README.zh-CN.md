@@ -73,7 +73,13 @@ const options = {
   verbose: false,
   
   // 图像缩放因子（更高 = 更好的质量但更慢）
-  scale: 3
+  scale: 3,
+
+  // 是否使用openai兼容接口
+  openAiApicompatible: true,
+
+  // 并发处理数量（可同时处理的页面数）
+  concurrency: 2
 };
 
 const result = await parsePdf('path/to/your.pdf', options);
