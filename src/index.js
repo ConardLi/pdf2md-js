@@ -27,6 +27,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     outputDir = './output',
     apiKey,
     baseUrl,
+    openAiApicompatible = false,
     model = 'gpt-4-vision-preview',
     prompt =  `使用markdown语法，将图片中识别到的文字转换为markdown格式输出。你必须做到：
           1. 输出和使用识别到的图片的相同的语言，例如，识别到英语的字段，输出的内容必须是英语。
@@ -107,7 +108,8 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     const modelClient = new ModelClient({
       apiKey,
       baseUrl,
-      model
+      model,
+      openAiApicompatible
     });
 
     const pageContents = [];

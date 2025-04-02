@@ -78,11 +78,11 @@ export class ModelClient {
     // 根据不同模型类型调用对应API
     if (model.startsWith('gpt-4') || model.startsWith('gpt-3.5')) {
       return this.callOpenAIAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('claude')) {
+    } else if (model.startsWith('claude')&&!this.config.openAiApicompatible) {
       return this.callClaudeAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('gemini')) {
+    } else if (model.startsWith('gemini')&&!this.config.openAiApicompatible) {
       return this.callGeminiAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('doubao')) {
+    } else if (model.startsWith('doubao')&&!this.config.openAiApicompatible) {
       return this.callDoubaoAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
     } else {
       // 默认使用OpenAI
