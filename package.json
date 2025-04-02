@@ -1,5 +1,5 @@
 {
-  "name": "pdf2md-node",
+  "name": "pdf2md-js",
   "version": "1.0.0",
   "description": "Convert PDF to Markdown using Node.js",
   "main": "src/index.js",
