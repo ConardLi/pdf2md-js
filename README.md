@@ -75,7 +75,13 @@ const options = {
   verbose: false,
   
   // Image scaling factor (higher = better quality but slower)
-  scale: 3
+  scale: 3,
+
+  // Whether to use OpenAI-compatible API
+  openAiApicompatible: true,
+
+  // Concurrency (number of pages that can be processed simultaneously)
+  concurrency: 2,
 };
 
 const result = await parsePdf('path/to/your.pdf', options);
