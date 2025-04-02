@@ -33,7 +33,7 @@ const CONFIG = {
   verbose: true,
 
   // 并发处理数量
-  concurrency: 2
+  concurrency: 5
 };
 
 /**

@@ -7,7 +7,7 @@ import path from 'path';
 import { parsePdfRects } from './pdfParser.js';
 import { generateImagesFromPdf, generateFullPageImages } from './imageGenerator.js';
 import { convertImagesToMarkdown } from './markdownConverter.js';
-import { ensureDir, removeFile,extractMdFromLLMOutput,adjustMarkdownHeadings,getOldMarkdownHeadings} from './utils.js';
+import { ensureDir, removeFile, extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils.js';
 import ModelClient from './modelClient.js';
 
 /**
@@ -29,7 +29,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     baseUrl,
     openAiApicompatible = false,
     model = 'gpt-4-vision-preview',
-    prompt =  `使用markdown语法，将图片中识别到的文字转换为markdown格式输出。你必须做到：
+    prompt = `使用markdown语法，将图片中识别到的文字转换为markdown格式输出。你必须做到：
           1. 输出和使用识别到的图片的相同的语言，例如，识别到英语的字段，输出的内容必须是英语。
           2. 不要解释和输出无关的文字，直接输出图片中的内容。
           3. 内容不要包含在\`\`\`markdown \`\`\`中、段落公式使用 $$ $$ 的形式、行内公式使用 $ $ 的形式。
@@ -143,13 +143,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     // 生成Markdown内容
     let content = '';
     for (const page of pageContents) {
-      content += `<!-- 页面 ${page.pageIndex} 开始 -->
-
-${page.content}
-
-<!-- 页面 ${page.pageIndex} 结束 -->
-
-`;
+      content += page.content;
     }
 
     console.log("正在重新调整目录...");
@@ -158,14 +152,14 @@ ${page.content}
     const title = await getOldMarkdownHeadings(content);
 
     //使用大模型重新调整目录结构
-    const convertedTitleLLMResult = await modelClient.processImage(null, textPrompt+JSON.stringify(title) || defaultPrompt);
+    const convertedTitleLLMResult = await modelClient.processImage(null, textPrompt + JSON.stringify(title) || defaultPrompt);
     const convertedTitle = await extractMdFromLLMOutput(convertedTitleLLMResult);
 
     //根据调整后的结果重新生成md文件
-    const convertContent=  await adjustMarkdownHeadings(content,convertedTitle);
+    const convertContent = await adjustMarkdownHeadings(content, convertedTitle);
 
     console.log("目录调整完成...");
-    
+
     // 第四步：保存Markdown文件
     const mdFilePath = path.join(outputDir, path.basename(pdfPath, '.pdf') + '.md');
     await fs.writeFile(mdFilePath, convertContent);

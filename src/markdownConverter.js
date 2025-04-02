@@ -47,7 +47,7 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
     concurrency = 1,
     modelConfig = {}
   } = options;
-  
+
   // 创建模型客户端
   const modelClient = new ModelClient({
     apiKey,
@@ -55,27 +55,27 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
     model,
     modelConfig
   });
-  
+
   // 使用自定义提示词或默认提示词
   const prompt = customPrompt || DEFAULT_PROMPT;
   const rectPrompt = customRectPrompt || DEFAULT_RECT_PROMPT;
-  
+
   // 存储每个图像的Markdown内容
   const markdownParts = [];
-  
+
   // 处理每个页面的图像
   for (let pageIndex = 0; pageIndex < imageInfos.length; pageIndex++) {
     const { pageImage, rectImages } = imageInfos[pageIndex];
     console.log(`处理页面 ${pageIndex + 1} 的 ${rectImages.length} 个区域图像`);
-    
+
     // 处理页面上的每个区域图像
     const tasks = rectImages.map(async (rectImage, rectIndex) => {
       const imagePath = path.join(outputDir, rectImage);
       const imageName = `${pageIndex}_${rectIndex}`;
-      
+
       // 构建提示词
       const fullPrompt = prompt + '\n' + rectPrompt.replace('%s', imageName);
-      
+
       try {
         // 处理图像
         const markdown = await processImageToMarkdown(modelClient, imagePath, fullPrompt, { model });
@@ -85,7 +85,7 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
         return { rectIndex, markdown: `<!-- 处理图像 ${imageName} 失败 -->` };
       }
     });
-    
+
     // 并行处理图像（根据并发度）
     const results = [];
     for (let i = 0; i < tasks.length; i += concurrency) {
@@ -93,17 +93,17 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
       const batchResults = await Promise.all(batch);
       results.push(...batchResults);
     }
-    
+
     // 按原始顺序整理结果
     const sortedResults = results.sort((a, b) => a.rectIndex - b.rectIndex);
     const pageMarkdownParts = sortedResults.map(result => result.markdown);
-    
+
     // 添加页面标记
-    markdownParts.push(`<!-- 页面 ${pageIndex + 1} 开始 -->\n\n`);
+    // markdownParts.push(`<!-- 页面 ${pageIndex + 1} 开始 -->\n\n`);
     markdownParts.push(...pageMarkdownParts);
-    markdownParts.push(`\n\n<!-- 页面 ${pageIndex + 1} 结束 -->\n\n`);
+    // markdownParts.push(`\n\n<!-- 页面 ${pageIndex + 1} 结束 -->\n\n`);
   }
-  
+
   // 合并所有Markdown内容
   return markdownParts.join('\n\n');
 };

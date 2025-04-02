@@ -69,20 +69,20 @@ export class ModelClient {
 
     // 读取图像文件
     let base64Image = null;
-    if(imagePath){
+    if (imagePath) {
       const imageBuffer = await fs.readFile(imagePath);
       base64Image = imageBuffer.toString('base64');
     }
-    
+
 
     // 根据不同模型类型调用对应API
     if (model.startsWith('gpt-4') || model.startsWith('gpt-3.5')) {
       return this.callOpenAIAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('claude')&&!this.config.openAiApicompatible) {
+    } else if (model.startsWith('claude') && !this.config.openAiApicompatible) {
       return this.callClaudeAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('gemini')&&!this.config.openAiApicompatible) {
+    } else if (model.startsWith('gemini') && !this.config.openAiApicompatible) {
       return this.callGeminiAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
-    } else if (model.startsWith('doubao')&&!this.config.openAiApicompatible) {
+    } else if (model.startsWith('doubao') && !this.config.openAiApicompatible) {
       return this.callDoubaoAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint);
     } else {
       // 默认使用OpenAI
@@ -280,7 +280,7 @@ export class ModelClient {
       max_tokens: maxTokens  // 添加max_tokens参数
     };
 
-    const response = await this.makeHttpRequest(`${apiEndpoint}/chat/completions`, {
+    const response = await this.makeHttpRequest(endpoint.endsWith('/chat/completions') ? apiEndpoint : `${apiEndpoint}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
