@@ -175,7 +175,7 @@ ${page.content}
     if (!verbose) {
       console.log('清理临时文件...');
       for (const imagePath of imageFiles) {
-        await removeFile(imagePath);
+        await removeFile(imagePath.path);
       }
     }
 
