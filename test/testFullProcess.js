@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 定义进度状态
-const progressState = { current: 0, total: 0, taskStatus: false };
+const progressState = { current: 0, total: 0, taskStatus: "pending" };
 
 // 测试配置
 const CONFIG = {

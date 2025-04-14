@@ -139,7 +139,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
           onProgress({
             current: pageContents.length,
             total: imageFiles.length,
-            taskStatus: "processing"
+            taskStatus: "running"
           });
         }
         return { success: true, item, data: pageContent };
