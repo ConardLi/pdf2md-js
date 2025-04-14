@@ -85,7 +85,8 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
                  `,
     verbose = false,
     scale = 3,
-    concurrency = 2
+    concurrency = 2,
+    onProgress
   } = options;
 
   // 确保输出目录存在
@@ -100,6 +101,15 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     await ensureDir(imageOutputDir);
 
     const imageFiles = await generateFullPageImages(pdfPath, imageOutputDir, scale);
+
+    //先把总页数传递回调用方法
+    if(onProgress){
+      onProgress({
+        current: 0,
+        total: imageFiles.length,
+        taskStatus: "starting"
+      });
+    }
 
     // 第二步：使用视觉模型处理每个页面图像
     console.log('处理全页图像...');
@@ -124,6 +134,14 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
           pageIndex: item.index,
           content: pageContent
         });
+        // 处理完成后，更新调用者的信息
+        if(onProgress){
+          onProgress({
+            current: pageContents.length,
+            total: imageFiles.length,
+            taskStatus: "running"
+          });
+        }
         return { success: true, item, data: pageContent };
       } catch (error) {
         console.error('Markdown 转换失败:', error);
@@ -171,6 +189,15 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
       for (const imagePath of imageFiles) {
         await removeFile(imagePath.path);
       }
+    }
+
+    // 将任务执行结束传递回调用方法
+    if(onProgress){
+      onProgress({
+        current: imageFiles.length,
+        total: imageFiles.length,
+        taskStatus:"finished"
+      });
     }
 
     return {

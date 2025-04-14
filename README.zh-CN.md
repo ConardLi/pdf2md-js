@@ -79,7 +79,13 @@ const options = {
   openAiApicompatible: true,
 
   // 并发处理数量（可同时处理的页面数）
-  concurrency: 2
+  concurrency: 2,
+
+  //处理进度结果回调方法（方便调用者跟踪页面处理进度，只有taskStatus状态为finished时整个转换任务才算完成）
+  onProgress: ({ current, total, taskStatus }) => {
+   console.log(`已处理：${current},总页数：${total},任务处理状态：${taskStatus}`);
+  }
+
 };
 
 const result = await parsePdf('path/to/your.pdf', options);
