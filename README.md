@@ -82,6 +82,11 @@ const options = {
 
   // Concurrency (number of pages that can be processed simultaneously)
   concurrency: 2,
+
+  // Progress handling callback method (allows the caller to track processing progress; the entire conversion task is only considered complete when the taskStatus is finished)
+  onProgress: ({ current, total, taskStatus }) => {
+    console.log(`Processed: ${current}, Total pages: ${total}, Task status: ${taskStatus}`);
+  }
 };
 
 const result = await parsePdf('path/to/your.pdf', options);

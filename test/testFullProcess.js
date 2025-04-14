@@ -11,6 +11,9 @@ import { parsePdf } from '../src/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// 定义进度状态
+const progressState = { current: 0, total: 0, taskStatus: false };
+
 // 测试配置
 const CONFIG = {
   // 测试PDF文件路径
@@ -61,7 +64,9 @@ async function testFullProcess() {
     // 开始处理
     const startTime = Date.now();
 
-    const result = await parsePdf(CONFIG.pdfPath, {
+    let parseResult = null;
+
+    parsePdf(CONFIG.pdfPath, {
       outputDir: CONFIG.outputDir,
       apiKey: CONFIG.apiKey,
       baseUrl: CONFIG.endpoint,
@@ -70,16 +75,35 @@ async function testFullProcess() {
       gptWorker: CONFIG.concurrency,
       useFullPage: CONFIG.useFullPage, // 添加useFullPage参数
       concurrency: CONFIG.concurrency,
+      //增加处理进度结果回调
+      onProgress: ({ current, total, taskStatus }) => {
+        progressState.current = current;
+        progressState.total = total;
+        progressState.taskStatus = taskStatus;
+      }
+    }).then(result => {
+      parseResult = result;
+    });
+
+    // 如果需要主动查询
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        console.log(`[主动查询] 进度: ${progressState.current}/${progressState.total},${progressState.taskStatus}`);
+        if (progressState.taskStatus === "finished") {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 1000);
     });
 
     const endTime = Date.now();
-
+    
     console.log(`\n处理完成，耗时: ${(endTime - startTime) / 1000}秒`);
-    console.log(`生成的Markdown文件: ${result.mdFilePath}`);
-    console.log(`生成的图像文件数量: ${result.imageFiles.length}`);
+    console.log(`生成的Markdown文件: ${parseResult.mdFilePath}`);
+    console.log(`生成的图像文件数量: ${parseResult.imageFiles.length}`);
 
     // 显示Markdown内容预览
-    const mdContent = fs.readFileSync(result.mdFilePath, 'utf-8');
+    const mdContent = fs.readFileSync(parseResult.mdFilePath, 'utf-8');
     const previewLength = Math.min(500, mdContent.length);
 
     console.log('\nMarkdown内容预览:');
