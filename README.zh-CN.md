@@ -1,7 +1,7 @@
 # PDF2MD Node.js
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%3E%3D%2016.0.0-brightgreen" alt="Node.js 版本">
+  <img src="https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen" alt="Node.js 版本">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="许可证">
 </p>
 
@@ -28,7 +28,7 @@ npm install
 
 ## 📋 系统要求
 
-- Node.js 16.0.0 或更高版本
+- Node.js 20.0.0 或更高版本
 - 至少一个支持的视觉模型的API密钥
 
 ## 🔧 使用方法

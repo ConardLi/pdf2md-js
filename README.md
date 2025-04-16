@@ -1,7 +1,7 @@
 # PDF2MD Node.js
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%3E%3D%2016.0.0-brightgreen" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen" alt="Node.js Version">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
@@ -30,7 +30,7 @@ npm install
 
 ## 📋 Requirements
 
-- Node.js 16.0.0 or higher
+- Node.js 20.0.0 or higher
 - API key for at least one of the supported vision models
 
 ## 🔧 Usage

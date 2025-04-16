@@ -2,10 +2,8 @@
  * 模型客户端模块，用于处理不同视觉模型的API调用
  */
 import fs from 'fs-extra';
-import path from 'path';
 import https from 'https';
 import http from 'http';
-import { promisify } from 'util';
 
 // 默认角色提示词（中文版）
 const DEFAULT_ROLE_PROMPT = `你是一个PDF文档解析器，使用markdown和latex语法输出图片的内容。`;
@@ -26,7 +24,7 @@ export class ModelClient {
     this.config = {
       model: 'gpt-4-vision-preview',
       modelConfig: {},
-      ...config
+      ...config,
     };
 
     // 初始化模型客户端
@@ -60,12 +58,7 @@ export class ModelClient {
    * @returns {Promise<string>} Markdown文本
    */
   async processImage(imagePath, prompt, options = {}) {
-    const {
-      model = this.config.model,
-      rolePrompt = DEFAULT_ROLE_PROMPT,
-      maxTokens = 4096,
-      endpoint = this.config.baseUrl
-    } = options;
+    const { model = this.config.model, rolePrompt = DEFAULT_ROLE_PROMPT, maxTokens = 4096, endpoint = this.config.baseUrl } = options;
 
     // 读取图像文件
     let base64Image = null;
@@ -73,7 +66,6 @@ export class ModelClient {
       const imageBuffer = await fs.readFile(imagePath);
       base64Image = imageBuffer.toString('base64');
     }
-
 
     // 根据不同模型类型调用对应API
     if (model.startsWith('gpt-4') || model.startsWith('gpt-3.5')) {
@@ -106,8 +98,8 @@ export class ModelClient {
       userContent.push({
         type: 'image_url',
         image_url: {
-          url: `data:image/png;base64,${base64Image}`
-        }
+          url: `data:image/png;base64,${base64Image}`,
+        },
       });
     }
 
@@ -116,23 +108,23 @@ export class ModelClient {
       messages: [
         {
           role: 'system',
-          content: rolePrompt
+          content: rolePrompt,
         },
         {
           role: 'user',
-          content: userContent
-        }
+          content: userContent,
+        },
       ],
-      max_tokens: maxTokens
+      max_tokens: maxTokens,
     };
 
     const response = await this.makeHttpRequest(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
+        Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(requestData),
     });
 
     if (response.error) {
@@ -160,8 +152,8 @@ export class ModelClient {
         source: {
           type: 'base64',
           media_type: 'image/png',
-          data: base64Image
-        }
+          data: base64Image,
+        },
       });
     }
 
@@ -172,9 +164,9 @@ export class ModelClient {
       messages: [
         {
           role: 'user',
-          content: messageContent
-        }
-      ]
+          content: messageContent,
+        },
+      ],
     };
 
     const response = await this.makeHttpRequest(apiEndpoint, {
@@ -182,9 +174,9 @@ export class ModelClient {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(requestData),
     });
 
     if (response.error) {
@@ -204,7 +196,7 @@ export class ModelClient {
 
     // 构建消息部分
     const parts = [
-      { text: `${rolePrompt}\n${prompt}` }  // 合并系统提示和用户提示
+      { text: `${rolePrompt}\n${prompt}` }, // 合并系统提示和用户提示
     ];
 
     // 如果有base64图片，添加图片内容
@@ -212,18 +204,20 @@ export class ModelClient {
       parts.push({
         inline_data: {
           mime_type: 'image/png', // 可以根据实际情况调整MIME类型
-          data: base64Image
-        }
+          data: base64Image,
+        },
       });
     }
 
     const requestData = {
-      contents: [{
-        parts: parts
-      }],
+      contents: [
+        {
+          parts: parts,
+        },
+      ],
       generation_config: {
-        max_output_tokens: maxTokens
-      }
+        max_output_tokens: maxTokens,
+      },
     };
 
     // Gemini API使用URL参数传递API密钥
@@ -232,9 +226,9 @@ export class ModelClient {
     const response = await this.makeHttpRequest(fullUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(requestData),
     });
 
     if (response.error) {
@@ -260,8 +254,8 @@ export class ModelClient {
       userContent.push({
         type: 'image_url',
         image_url: {
-          url: `data:image/png;base64,${base64Image}`
-        }
+          url: `data:image/png;base64,${base64Image}`,
+        },
       });
     }
 
@@ -270,14 +264,14 @@ export class ModelClient {
       messages: [
         {
           role: 'system',
-          content: rolePrompt
+          content: rolePrompt,
         },
         {
           role: 'user',
-          content: userContent
-        }
+          content: userContent,
+        },
       ],
-      max_tokens: maxTokens  // 添加max_tokens参数
+      max_tokens: maxTokens, // 添加max_tokens参数
     };
 
     const response = await this.makeHttpRequest(endpoint.endsWith('/chat/completions') ? apiEndpoint : `${apiEndpoint}/chat/completions`, {
@@ -285,9 +279,9 @@ export class ModelClient {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(JSON.stringify(requestData)),
-        'Authorization': `Bearer ${this.apiKey}`
+        Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(requestData),
     });
 
     if (response.error) {
@@ -313,7 +307,7 @@ export class ModelClient {
         headers: options.headers || {},
         hostname: urlObj.hostname,
         port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
-        path: urlObj.pathname + urlObj.search
+        path: urlObj.pathname + urlObj.search,
       };
       const req = client.request(requestOptions, (res) => {
         let data = '';
@@ -362,7 +356,7 @@ export class ModelClient {
       // Gemini模型
       'gemini-pro-vision',
       // 豆包模型
-      'doubao-1.5-vision-pro-32k-250115'
+      'doubao-1.5-vision-pro-32k-250115',
     ];
   }
 }

@@ -17,31 +17,30 @@ export const mergeRects = (rectList, distance = 20, horizontalDistance = null) =
     if (!rectList || !Array.isArray(rectList) || rectList.length === 0) {
       return [];
     }
-    
+
     // 预处理：过滤无效矩形
-    let validRects = rectList.filter(rect => rect && isValidRect(rect));
+    let validRects = rectList.filter((rect) => rect && isValidRect(rect));
     if (validRects.length === 0) {
       return [];
     }
-    
+
     // 复制数组，避免修改原数组
     let workingRects = [...validRects];
     let merged = true;
-    
+
     while (merged && workingRects.length > 0) {
       merged = false;
       const newRectList = [];
-      
+
       while (workingRects.length > 0) {
         let rect = workingRects.shift();
         if (!rect) continue; // 跳过空值
-        
+
         for (let i = 0; i < workingRects.length; i++) {
           const otherRect = workingRects[i];
           if (!otherRect) continue; // 跳过空值
-          
-          if (isNear(rect, otherRect, distance) || 
-              (horizontalDistance && isHorizontalNear(rect, otherRect, horizontalDistance))) {
+
+          if (isNear(rect, otherRect, distance) || (horizontalDistance && isHorizontalNear(rect, otherRect, horizontalDistance))) {
             // 合并矩形
             const mergedRect = unionRects(rect, otherRect);
             if (mergedRect) {
@@ -53,17 +52,17 @@ export const mergeRects = (rectList, distance = 20, horizontalDistance = null) =
             }
           }
         }
-        
+
         if (rect) {
           newRectList.push(rect);
         }
       }
-      
+
       workingRects = newRectList;
     }
-    
+
     // 过滤无效的矩形
-    return workingRects.filter(rect => rect && isValidRect(rect));
+    return workingRects.filter((rect) => rect && isValidRect(rect));
   } catch (error) {
     console.error('合并矩形时出错:', error.message);
     return [];
@@ -80,10 +79,10 @@ export const mergeRects = (rectList, distance = 20, horizontalDistance = null) =
 export const adsorbRectsToRects = (sourceRects, targetRects, distance = 10) => {
   const newSourceRects = [];
   const updatedTargetRects = [...targetRects];
-  
+
   for (const rect of sourceRects) {
     let adsorbed = false;
-    
+
     for (let i = 0; i < updatedTargetRects.length; i++) {
       if (isNear(rect, updatedTargetRects[i], distance)) {
         // 合并矩形
@@ -92,12 +91,12 @@ export const adsorbRectsToRects = (sourceRects, targetRects, distance = 10) => {
         break;
       }
     }
-    
+
     if (!adsorbed) {
       newSourceRects.push(rect);
     }
   }
-  
+
   return [newSourceRects, updatedTargetRects];
 };
 
@@ -107,7 +106,7 @@ export const adsorbRectsToRects = (sourceRects, targetRects, distance = 10) => {
  * @returns {Array} 矩形坐标数组 [[x0, y0, x1, y1], ...]
  */
 export const rectsToCoordinates = (rects) => {
-  return rects.map(rect => {
+  return rects.map((rect) => {
     const bbox = turf.bbox(rect);
     return [bbox[0], bbox[1], bbox[2], bbox[3]];
   });
@@ -121,17 +120,10 @@ export const rectsToCoordinates = (rects) => {
  * @returns {Array} 过滤后的矩形列表
  */
 export const filterSmallRects = (rects, minWidth = 20, minHeight = 20) => {
-  return rects.filter(rect => {
+  return rects.filter((rect) => {
     const bbox = turf.bbox(rect);
     const width = bbox[2] - bbox[0];
     const height = bbox[3] - bbox[1];
     return width > minWidth && height > minHeight;
   });
-};
-
-export default {
-  mergeRects,
-  adsorbRectsToRects,
-  rectsToCoordinates,
-  filterSmallRects
 };

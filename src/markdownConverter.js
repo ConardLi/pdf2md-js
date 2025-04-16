@@ -1,7 +1,6 @@
 /**
  * Markdown转换模块，使用模型客户端将图像转换为Markdown
  */
-import fs from 'fs-extra';
 import path from 'path';
 import ModelClient from './modelClient.js';
 
@@ -45,7 +44,7 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
     rectPrompt: customRectPrompt,
     verbose = false,
     concurrency = 1,
-    modelConfig = {}
+    modelConfig = {},
   } = options;
 
   // 创建模型客户端
@@ -53,7 +52,7 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
     apiKey,
     baseUrl,
     model,
-    modelConfig
+    modelConfig,
   });
 
   // 使用自定义提示词或默认提示词
@@ -96,7 +95,7 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
 
     // 按原始顺序整理结果
     const sortedResults = results.sort((a, b) => a.rectIndex - b.rectIndex);
-    const pageMarkdownParts = sortedResults.map(result => result.markdown);
+    const pageMarkdownParts = sortedResults.map((result) => result.markdown);
 
     // 添加页面标记
     // markdownParts.push(`<!-- 页面 ${pageIndex + 1} 开始 -->\n\n`);
@@ -108,9 +107,4 @@ export const convertImagesToMarkdown = async (imageInfos, outputDir, options) =>
   return markdownParts.join('\n\n');
 };
 
-export default {
-  processImageToMarkdown,
-  convertImagesToMarkdown,
-  DEFAULT_PROMPT,
-  DEFAULT_RECT_PROMPT
-};
+export { DEFAULT_PROMPT, DEFAULT_RECT_PROMPT };

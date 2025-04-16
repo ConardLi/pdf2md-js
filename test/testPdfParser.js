@@ -5,26 +5,12 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pkg from 'pdfjs-dist/legacy/build/pdf.js';
-const { getDocument } = pkg;
-import { parseRects, parsePdfRects } from '../src/pdfParser.js';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { parseRects } from '../src/pdfParser.js';
 
 // 获取当前文件的目录
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// 设置PDF.js的worker路径
-try {
-  const pdfjsWorker = path.join(__dirname, '..', 'node_modules/pdfjs-dist/legacy/build/pdf.worker.js');
-  const pdfjsWorkerUrl = new URL(`file://${pdfjsWorker}`).href;
-
-  // 全局设置worker路径
-  globalThis.pdfjsWorkerSrc = pdfjsWorkerUrl;
-
-  console.log('设置PDF.js worker路径:', pdfjsWorkerUrl);
-} catch (error) {
-  console.warn('设置PDF.js worker路径时出错:', error.message);
-}
 
 // 测试配置
 const CONFIG = {
@@ -32,7 +18,7 @@ const CONFIG = {
   pdfPath: path.join(__dirname, 'samples', '1.pdf'),
 
   // 输出目录
-  outputDir: path.join(__dirname, 'output')
+  outputDir: path.join(__dirname, 'output'),
 };
 
 /**
@@ -80,7 +66,7 @@ async function testParseRects() {
       if (rects.length > 0) {
         console.log('前5个区域的坐标:');
         rects.slice(0, 5).forEach((rect, index) => {
-          console.log(`  区域 ${index + 1}: [${rect.map(v => v.toFixed(2)).join(', ')}]`);
+          console.log(`  区域 ${index + 1}: [${rect.map((v) => v.toFixed(2)).join(', ')}]`);
         });
       }
 
@@ -89,7 +75,6 @@ async function testParseRects() {
       fs.writeFileSync(outputPath, JSON.stringify(rects, null, 2));
       console.log(`区域信息已保存到: ${outputPath}`);
     }
-
   } catch (error) {
     console.error('解析PDF区域时发生错误:', error);
   }

@@ -5,27 +5,13 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pkg from 'pdfjs-dist/legacy/build/pdf.js';
-const { getDocument } = pkg;
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { renderRectToImage, generateImagesFromPdf } from '../src/imageGenerator.js';
 import { parsePdfRects } from '../src/pdfParser.js';
 
 // 获取当前文件的目录
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// 设置PDF.js的worker路径
-try {
-  const pdfjsWorker = path.join(__dirname, '..', 'node_modules/pdfjs-dist/legacy/build/pdf.worker.js');
-  const pdfjsWorkerUrl = new URL(`file://${pdfjsWorker}`).href;
-
-  // 全局设置worker路径
-  globalThis.pdfjsWorkerSrc = pdfjsWorkerUrl;
-
-  console.log('设置PDF.js worker路径:', pdfjsWorkerUrl);
-} catch (error) {
-  console.warn('设置PDF.js worker路径时出错:', error.message);
-}
 
 // 测试配置
 const CONFIG = {
@@ -39,7 +25,7 @@ const CONFIG = {
   drawBoundingBox: true,
 
   // 缩放比例
-  scale: 2
+  scale: 2,
 };
 
 /**
@@ -53,7 +39,7 @@ async function testFullPdfToImage() {
     await fs.ensureDir(CONFIG.outputDir);
 
     // 检查PDF文件是否存在
-    if (!await fs.pathExists(CONFIG.pdfPath)) {
+    if (!(await fs.pathExists(CONFIG.pdfPath))) {
       console.error(`错误: 测试PDF文件不存在: ${CONFIG.pdfPath}`);
       console.log('请将测试PDF文件放在 test/samples 目录下，并更新 CONFIG.pdfPath');
       return;
@@ -86,13 +72,7 @@ async function testFullPdfToImage() {
     // 第二步：生成所有区域的图像
     console.log('\n步骤2: 生成所有区域的图像...');
     const startGenTime = Date.now();
-    const imageInfos = await generateImagesFromPdf(
-      CONFIG.pdfPath,
-      pageRects,
-      CONFIG.outputDir,
-      CONFIG.drawBoundingBox,
-      CONFIG.scale
-    );
+    const imageInfos = await generateImagesFromPdf(CONFIG.pdfPath, pageRects, CONFIG.outputDir, CONFIG.drawBoundingBox, CONFIG.scale);
     const endGenTime = Date.now();
 
     console.log(`图像生成完成，耗时: ${(endGenTime - startGenTime) / 1000}秒`);
@@ -119,7 +99,6 @@ async function testFullPdfToImage() {
 
     console.log(`\n总共生成了 ${totalImages} 张图像，包括 ${imageInfos.length} 张完整页面图像和 ${totalImages - imageInfos.length} 张区域图像`);
     console.log(`所有图像已保存到: ${CONFIG.outputDir}`);
-
   } catch (error) {
     console.error('测试过程中发生错误:', error);
   }
@@ -140,6 +119,6 @@ async function main() {
 }
 
 // 运行测试
-main().catch(error => {
+main().catch((error) => {
   console.error('测试过程中发生错误:', error);
 });

@@ -1,8 +1,7 @@
 /**
  * PDF解析模块，负责从PDF文件中提取文本和图像信息
  */
-import pkg from 'pdfjs-dist/legacy/build/pdf.js';
-const { getDocument, OPS } = pkg;
+import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createRect } from './utils.js';
 import { mergeRects, adsorbRectsToRects, filterSmallRects } from './rectProcessor.js';
 import fs from 'fs-extra';
@@ -23,7 +22,7 @@ export const parseRects = async (page) => {
   const textContent = await page.getTextContent();
 
   // 创建文本区域的矩形列表
-  const textRects = textContent.items.map(item => {
+  const textRects = textContent.items.map((item) => {
     const { str, transform } = item;
     // 获取文本项的位置和尺寸
     const x = transform[4];
@@ -35,13 +34,13 @@ export const parseRects = async (page) => {
     return {
       rect: createRect([x, viewport.height - y - height, x + width, viewport.height - y]),
       text: str,
-      isLarge: str.length / Math.max(1, str.split('\n').length) > 5 // 判断是否为大文本块
+      isLarge: str.length / Math.max(1, str.split('\n').length) > 5, // 判断是否为大文本块
     };
   });
 
   // 分离大文本和小文本区域
-  const largeTextRects = textRects.filter(item => item.isLarge).map(item => item.rect);
-  const smallTextRects = textRects.filter(item => !item.isLarge).map(item => item.rect);
+  const largeTextRects = textRects.filter((item) => item.isLarge).map((item) => item.rect);
+  const smallTextRects = textRects.filter((item) => !item.isLarge).map((item) => item.rect);
   console.log(`创建了 ${textRects.length} 个文本区域，其中大文本 ${largeTextRects.length} 个，小文本 ${smallTextRects.length} 个`);
 
   // 获取操作列表，找出图像和绘图元素
@@ -65,12 +64,7 @@ export const parseRects = async (page) => {
         if (pathArgs.length >= 2 && pathArgs[0].length >= 4) {
           const coords = pathArgs[0].slice(0, 4);
           // 创建矩形，简化处理
-          const rect = createRect([
-            coords[0],
-            viewport.height - coords[1],
-            coords[2],
-            viewport.height - coords[3]
-          ]);
+          const rect = createRect([coords[0], viewport.height - coords[1], coords[2], viewport.height - coords[3]]);
 
           // 忽略小的水平线
           const bbox = rect.bbox;
@@ -94,12 +88,7 @@ export const parseRects = async (page) => {
         const width = transform[0] * 100; // 简化估计
         const height = transform[3] * 100; // 简化估计
 
-        const rect = createRect([
-          x,
-          viewport.height - y - height,
-          x + width,
-          viewport.height - y
-        ]);
+        const rect = createRect([x, viewport.height - y - height, x + width, viewport.height - y]);
 
         imageRects.push(rect);
       }
@@ -108,7 +97,9 @@ export const parseRects = async (page) => {
 
   // 合并所有矩形
   let allRects = [...drawingRects, ...imageRects, ...largeTextRects, ...smallTextRects];
-  console.log(`提取到 ${drawingRects.length} 个绘图区域、${imageRects.length} 个图像区域、${largeTextRects.length} 个大文本区域和 ${smallTextRects.length} 个小文本区域`);
+  console.log(
+    `提取到 ${drawingRects.length} 个绘图区域、${imageRects.length} 个图像区域、${largeTextRects.length} 个大文本区域和 ${smallTextRects.length} 个小文本区域`,
+  );
 
   // 合并相近的矩形 - 增加合并阈值以确保文本不被截断
   let mergedRects = mergeRects(allRects, 25, 150); // 将距离阈值从10增加到25，高度阈值从100增加到150
@@ -133,11 +124,11 @@ export const parseRects = async (page) => {
   console.log(`过滤小矩形后剩下 ${mergedRects.length} 个区域`);
 
   // 将矩形转换为坐标数组
-  const result = mergedRects.map(rect => {
+  const result = mergedRects.map((rect) => {
     const bbox = rect.bbox;
     return [bbox[0], bbox[1], bbox[2], bbox[3]];
   });
-  
+
   console.log(`最终返回 ${result.length} 个区域`);
   return result;
 };
@@ -162,16 +153,11 @@ export const parsePdfRects = async (pdfPath) => {
 
     results.push({
       pageIndex: i - 1,
-      rects
+      rects,
     });
 
     console.log(`处理页面 ${i}/${pageCount}，找到 ${rects.length} 个区域`);
   }
 
   return results;
-};
-
-export default {
-  parseRects,
-  parsePdfRects
 };

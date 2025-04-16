@@ -4,9 +4,7 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { parsePdfRects } from './pdfParser.js';
-import { generateImagesFromPdf, generateFullPageImages } from './imageGenerator.js';
-import { convertImagesToMarkdown } from './markdownConverter.js';
+import { generateFullPageImages } from './imageGenerator.js';
 import { ensureDir, removeFile, extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils.js';
 import ModelClient from './modelClient.js';
 
@@ -86,7 +84,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     verbose = false,
     scale = 3,
     concurrency = 2,
-    onProgress
+    onProgress,
   } = options;
 
   // 确保输出目录存在
@@ -103,11 +101,11 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     const imageFiles = await generateFullPageImages(pdfPath, imageOutputDir, scale);
 
     //先把总页数传递回调用方法
-    if(onProgress){
+    if (onProgress) {
       onProgress({
         current: 0,
         total: imageFiles.length,
-        taskStatus: "starting"
+        taskStatus: 'starting',
       });
     }
 
@@ -119,11 +117,11 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
       apiKey,
       baseUrl,
       model,
-      openAiApicompatible
+      openAiApicompatible,
     });
 
     const pageContents = [];
-    const processImages = async item => {
+    const processImages = async (item) => {
       console.log(`处理页面 ${item.index}/${imageFiles.length}: ${path.basename(item.path)}`);
       try {
         // 处理图像 - 确保传入有效的prompt
@@ -132,14 +130,14 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
         // 添加页面内容
         pageContents.push({
           pageIndex: item.index,
-          content: pageContent
+          content: pageContent,
         });
         // 处理完成后，更新调用者的信息
-        if(onProgress){
+        if (onProgress) {
           onProgress({
             current: pageContents.length,
             total: imageFiles.length,
-            taskStatus: "running"
+            taskStatus: 'running',
           });
         }
         return { success: true, item, data: pageContent };
@@ -147,7 +145,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
         console.error('Markdown 转换失败:', error);
         return { success: false, item, error: error.message };
       }
-    }
+    };
 
     // 并行处理所有问题，最多同时处理5个
     await processInParallel(imageFiles, processImages, concurrency);
@@ -164,7 +162,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
       content += page.content;
     }
 
-    console.log("正在重新调整目录...");
+    console.log('正在重新调整目录...');
 
     // 提取转换后的标题
     const title = await getOldMarkdownHeadings(content);
@@ -176,7 +174,7 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     //根据调整后的结果重新生成md文件
     const convertContent = await adjustMarkdownHeadings(content, convertedTitle);
 
-    console.log("目录调整完成...");
+    console.log('目录调整完成...');
 
     // 第四步：保存Markdown文件
     const mdFilePath = path.join(outputDir, path.basename(pdfPath, '.pdf') + '.md');
@@ -192,18 +190,18 @@ export const parsePdfFullPage = async (pdfPath, options = {}) => {
     }
 
     // 将任务执行结束传递回调用方法
-    if(onProgress){
+    if (onProgress) {
       onProgress({
         current: imageFiles.length,
         total: imageFiles.length,
-        taskStatus:"finished"
+        taskStatus: 'finished',
       });
     }
 
     return {
       content,
       mdFilePath,
-      imageFiles
+      imageFiles,
     };
   } catch (error) {
     console.error('PDF解析过程中发生错误:', error);
@@ -238,7 +236,7 @@ const processInParallel = async (items, processFunction, concurrencyLimit) => {
     // 如果有空闲槽位且队列中还有任务，启动新任务
     while (inProgress.size < concurrencyLimit && queue.length > 0) {
       const item = queue.shift();
-      const promise = processFunction(item).then(result => {
+      const promise = processFunction(item).then((result) => {
         inProgress.delete(promise);
         return result;
       });
@@ -255,11 +253,7 @@ const processInParallel = async (items, processFunction, concurrencyLimit) => {
   return Promise.all(results);
 };
 
-
 /**
  * PDF2MD模块导出
  */
-export default {
-  parsePdf,
-  parsePdfFullPage
-};
+export { parsePdf, parsePdfFullPage };
