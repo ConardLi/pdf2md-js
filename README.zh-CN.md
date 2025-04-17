@@ -106,19 +106,19 @@ const result = await parsePdf('path/to/your.pdf', options);
 
 ```bash
 # 测试完整的PDF到Markdown转换流程
-node test/testFullProcess.js
+pnpm vite-node test/testFullProcess.js
 
 # 仅测试PDF到图像的转换
-node test/testFullPageImages.js
+pnpm vite-node test/testFullPageImages.js
 
 # 测试特定视觉模型
-node test/testModel.js
+pnpm vite-node test/testModel.js
 ```
 
 ## 📁 项目结构
 
 ```
-pdf2md-node/
+pdf2md-js/
 ├── src/
 │   ├── index.js          # 主入口点
 │   ├── pdfParser.js      # PDF解析模块

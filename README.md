@@ -107,19 +107,19 @@ The project includes several test scripts to verify functionality:
 
 ```bash
 # Test the full PDF to Markdown conversion process
-node test/testFullProcess.js
+pnpm vite-node test/testFullProcess.js
 
 # Test only the PDF to image conversion
-node test/testFullPageImages.js
+pnpm vite-node test/testFullPageImages.js
 
 # Test specific vision models
-node test/testModel.js
+pnpm vite-node test/testModel.js
 ```
 
 ## 📁 Project Structure
 
 ```
-pdf2md-node/
+pdf2md-js/
 ├── src/
 │   ├── index.js          # Main entry point
 │   ├── pdfParser.js      # PDF parsing module
