@@ -47,9 +47,6 @@ interface ParseResult {
 /**
  * 将PDF文件解析为Markdown
  */
-/**
- * 将PDF文件解析为Markdown，使用全页图像识别
- */
 export const parsePdf = async (
   pdfPath: string,
   options: ParseOptions = {
@@ -194,7 +191,7 @@ export const parsePdf = async (
     // 生成Markdown内容
     let content = '';
     for (const page of pageContents) {
-      content += page.content;
+      content += page.content + '\n';
     }
 
     console.log('正在重新调整目录...');

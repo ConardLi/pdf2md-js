@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import express from 'express';
 import fs from 'node:fs/promises';
-import { parsePdfFullPage } from '@tiny-tool/pdf2md';
+import { parsePdf } from '@tiny-tool/pdf2md';
 
 /**
  * Reads a file from the specified path.
@@ -73,7 +73,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         console.log('pdf2md called with args:', parsed.data);
 
-        const parsedResult = await parsePdfFullPage(parsed.data.file_path);
+        const parsedResult = await parsePdf(parsed.data.file_path);
         return {
           content: [{ type: 'text', text: parsedResult.content }],
         };

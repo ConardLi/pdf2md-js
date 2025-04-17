@@ -1,3 +1,5 @@
 **/node_modules
 **/dist
 .vscode/mcp.json
+samples
+packages/mcp/output
