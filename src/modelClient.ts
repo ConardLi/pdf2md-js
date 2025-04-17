@@ -68,7 +68,7 @@ export class ModelClient {
   /**
    * 处理图像并转换为Markdown文本
    */
-  async processImage(imagePath: string, prompt: string, options: ProcessImageOptions = {}): Promise<string> {
+  async processImage(imagePath: string | null, prompt: string, options: ProcessImageOptions = {}): Promise<string> {
     const { model = this.config.model, rolePrompt = DEFAULT_ROLE_PROMPT, maxTokens = 4096, endpoint = this.config.baseUrl } = options;
 
     // 读取图像文件

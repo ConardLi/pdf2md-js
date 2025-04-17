@@ -5,10 +5,12 @@
   "description": "Convert PDF to Markdown using Node.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -34,8 +36,10 @@
   "devDependencies": {
     "@rslib/core": "^0.6.3",
     "@types/fs-extra": "^11.0.4",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^22.14.1",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=20"
