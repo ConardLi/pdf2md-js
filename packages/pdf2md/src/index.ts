@@ -50,7 +50,7 @@ interface ParseResult {
 /**
  * 将PDF文件解析为Markdown，使用全页图像识别
  */
-export const parsePdfFullPage = async (
+export const parsePdf = async (
   pdfPath: string,
   options: ParseOptions = {
     apiKey: '',
@@ -243,22 +243,6 @@ export const parsePdfFullPage = async (
     console.error('PDF解析过程中发生错误:', error);
     throw error;
   }
-};
-
-/**
- * 将PDF文件解析为Markdown（使用区域识别）
- */
-/**
- * 将PDF文件解析为Markdown
- */
-export const parsePdf = async (
-  pdfPath: string,
-  options: ParseOptions = {
-    apiKey: '',
-  },
-): Promise<ParseResult> => {
-  // 直接使用全页图像处理，不再使用子图
-  return parsePdfFullPage(pdfPath, options);
 };
 
 // 定义并行处理的辅助函数类型

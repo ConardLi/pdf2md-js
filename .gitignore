@@ -1,8 +1,3 @@
-/node_modules
-/test/samples
-/test/output
-/test/results
-/test/imahes
-/test/tt.js
-/test/mm.js
-dist
+**/node_modules
+**/dist
+.vscode/mcp.json
