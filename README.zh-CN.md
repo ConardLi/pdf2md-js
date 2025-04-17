@@ -18,12 +18,10 @@
 ## 🚀 安装
 
 ```bash
-# 克隆仓库
-git clone https://github.com/yourusername/pdf2md.git
-cd pdf2md/pdf2md-node
-
-# 安装依赖
-npm install
+# Install dependencies
+pnpm add pdf2md-js
+# or
+npm add pdf2md-js
 ```
 
 ## 📋 系统要求
@@ -36,7 +34,7 @@ npm install
 ### 基本用法
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf } from 'pdf2md-js';
 
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',

@@ -20,12 +20,10 @@ A powerful Node.js tool for converting PDF documents to Markdown format using ad
 ## 🚀 Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/pdf2md.git
-cd pdf2md/pdf2md-node
-
 # Install dependencies
-npm install
+pnpm add pdf2md-js
+# or
+npm add pdf2md-js
 ```
 
 ## 📋 Requirements
@@ -38,7 +36,7 @@ npm install
 ### Basic Usage
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf } from 'pdf2md-js';
 
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',
