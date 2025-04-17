@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { generateFullPageImages } from './imageGenerator';
 import { ensureDir, removeFile, extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils.js';
-import ModelClient from './modelClient.js';
+import ModelClient from './modelClient';
 
 /**
  * 将PDF文件解析为Markdown

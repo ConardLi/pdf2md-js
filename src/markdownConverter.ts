@@ -2,7 +2,7 @@
  * Markdown转换模块，使用模型客户端将图像转换为Markdown
  */
 import path from 'path';
-import ModelClient from './modelClient.js';
+import ModelClient from './modelClient';
 
 // 接口定义
 interface ImageInfo {
@@ -42,10 +42,10 @@ const DEFAULT_RECT_PROMPT = `图片中用红色框和名称(%s)标注出了一�
  * @returns Markdown内容
  */
 export const processImageToMarkdown = async (
-  modelClient: ModelClient, 
-  imagePath: string, 
-  prompt: string, 
-  options: Record<string, any> = {}
+  modelClient: ModelClient,
+  imagePath: string,
+  prompt: string,
+  options: Record<string, any> = {},
 ): Promise<string> => {
   return modelClient.processImage(imagePath, prompt, options);
 };
@@ -57,11 +57,7 @@ export const processImageToMarkdown = async (
  * @param options 配置选项
  * @returns 合并后的Markdown内容
  */
-export const convertImagesToMarkdown = async (
-  imageInfos: ImageInfo[], 
-  outputDir: string, 
-  options: ConversionOptions
-): Promise<string> => {
+export const convertImagesToMarkdown = async (imageInfos: ImageInfo[], outputDir: string, options: ConversionOptions): Promise<string> => {
   const {
     apiKey,
     baseUrl,
