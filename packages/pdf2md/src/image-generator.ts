@@ -4,7 +4,6 @@
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { PageViewport } from 'pdfjs-dist/types/src/display/display_utils.d.ts';
 import type { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api.d.ts';
-import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs-extra';
 import { createCanvas, Canvas } from '@napi-rs/canvas';
@@ -67,7 +66,7 @@ export const generateFullPageImages = async (pdfData: Buffer | string, outputDir
     const imagePath = path.join(outputDir, imageName);
 
     // 将canvas转换为图像并保存
-    const buffer = await sharp(canvas.toBuffer('image/png')).png().toBuffer();
+    const buffer = canvas.toBuffer('image/png');
     await fs.writeFile(imagePath, buffer);
 
     // 添加到结果数组

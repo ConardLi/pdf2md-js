@@ -73,7 +73,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         console.log('pdf2md called with args:', parsed.data);
 
-        const parsedResult = await parsePdf(parsed.data.file_path);
+        const parsedResult = await parsePdf(
+          parsed.data.file_path,
+          {
+            baseURL: 'http://localhost:11434/v1/',
+            model: 'gemma3:12b',
+          },
+          { scale: 1 },
+        );
         return {
           content: [{ type: 'text', text: parsedResult.content }],
         };
