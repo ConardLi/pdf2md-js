@@ -1,7 +1,6 @@
 /**
  * 模型客户端模块，用于处理不同视觉模型的API调用
  */
-import fs from 'fs-extra';
 import { generateText } from '@xsai/generate-text';
 import type { UserMessagePart } from '@xsai/shared-chat';
 
@@ -44,14 +43,13 @@ export class ModelClient {
   /**
    * 处理图像并转换为Markdown文本
    */
-  async processImage(imagePath: string | null, prompt: string, options: ProcessImageOptions = {}): Promise<string> {
+  async processImage(imageData: Buffer | null, prompt: string, options: ProcessImageOptions = {}): Promise<string> {
     const { rolePrompt = DEFAULT_ROLE_PROMPT } = options;
 
     // 读取图像文件
     let base64Image: string | null = null;
-    if (imagePath) {
-      const imageBuffer = await fs.readFile(imagePath);
-      base64Image = imageBuffer.toString('base64');
+    if (imageData) {
+      base64Image = imageData.toString('base64');
     }
 
     const modelConfig: ModelConfig = {

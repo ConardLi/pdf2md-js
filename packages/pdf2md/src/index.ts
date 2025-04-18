@@ -4,8 +4,8 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { generateFullPageImages } from './image-generator';
-import { removeFile, extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils';
+import { generateFullPageImages, PageImage } from './image-generator';
+import { extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils';
 import ModelClient, { ModelConfig } from './model-client';
 import { DefaultPrompt, DefaultTextPrompt } from './const';
 
@@ -25,11 +25,6 @@ interface ProgressInfo {
   taskStatus: 'starting' | 'running' | 'finished';
 }
 
-interface ImageFile {
-  path: string;
-  index: number;
-}
-
 interface PageContent {
   pageIndex: number;
   content: string;
@@ -38,7 +33,6 @@ interface PageContent {
 interface ParseResult {
   content: string;
   mdFilePath: string;
-  imageFiles: ImageFile[];
 }
 
 /**
@@ -76,12 +70,17 @@ export const parsePdf = async (pdfPath: string, modelConfig: ModelConfig = {}, o
     const modelClient = new ModelClient(modelConfig);
 
     const pageContents: PageContent[] = [];
-    const processImages = async (item: ImageFile) => {
-      console.log(`处理页面 ${item.index}/${imageFiles.length}: ${path.basename(item.path)}`);
+    const processImages = async (item: PageImage) => {
+      console.log(`处理页面 ${item.index}/${imageFiles.length}`);
       try {
         // 处理图像 - 确保传入有效的prompt
         const defaultPrompt = '请将图像中的所有文本内容转换为Markdown格式，包括标题、段落、列表和表格等。';
-        const pageContent = await modelClient.processImage(item.path, prompt || defaultPrompt);
+        const pageContent = await modelClient.processImage(item.data, prompt || defaultPrompt);
+
+        if (true) {
+          await fs.writeFile(`${imageOutputDir}/page_${item.index}.md`, pageContent, { encoding: 'utf8' });
+        }
+
         // 添加页面内容
         pageContents.push({
           pageIndex: item.index,
@@ -137,14 +136,6 @@ export const parsePdf = async (pdfPath: string, modelConfig: ModelConfig = {}, o
     await fs.writeFile(mdFilePath, convertContent);
     console.log('Markdown文件已保存至:', mdFilePath);
 
-    // 第五步：清理临时图像文件（如果不需要保留）
-    if (!verbose) {
-      console.log('清理临时文件...');
-      for (const imagePath of imageFiles) {
-        await removeFile(imagePath.path);
-      }
-    }
-
     // 将任务执行结束传递回调用方法
     if (onProgress) {
       onProgress({
@@ -157,7 +148,6 @@ export const parsePdf = async (pdfPath: string, modelConfig: ModelConfig = {}, o
     return {
       content,
       mdFilePath,
-      imageFiles,
     };
   } catch (error) {
     console.error('PDF解析过程中发生错误:', error);

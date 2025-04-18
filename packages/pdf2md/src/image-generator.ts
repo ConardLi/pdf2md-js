@@ -4,12 +4,11 @@
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { PageViewport } from 'pdfjs-dist/types/src/display/display_utils.d.ts';
 import type { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api.d.ts';
-import path from 'path';
 import fs from 'fs-extra';
 import { createCanvas, Canvas } from '@napi-rs/canvas';
 
 // 定义一些类型
-type PageImage = { index: number; path: string };
+export type PageImage = { index: number; data: Buffer };
 
 /**
  * 直接生成PDF文档的所有页面图像，不依赖区域识别
@@ -61,18 +60,11 @@ export const generateFullPageImages = async (pdfData: Buffer | string, outputDir
       viewport: viewport,
     }).promise;
 
-    // 保存为图像
-    const imageName = `page_${pageIndex}.png`;
-    const imagePath = path.join(outputDir, imageName);
-
     // 将canvas转换为图像并保存
     const buffer = canvas.toBuffer('image/png');
-    await fs.writeFile(imagePath, buffer);
 
     // 添加到结果数组
-    pageImages.push({ index: pageIndex, path: imagePath });
-
-    console.log(`页面 ${pageIndex} 已保存到: ${imagePath}`);
+    pageImages.push({ index: pageIndex, data: buffer });
   }
 
   return pageImages;

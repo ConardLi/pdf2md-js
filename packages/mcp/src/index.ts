@@ -73,13 +73,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         console.log('pdf2md called with args:', parsed.data);
 
+        // const parsedResult = await parsePdf(
+        //   parsed.data.file_path,
+        //   {
+        //     apiKey: '',
+        //     baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
+        //     model: 'qwen2.5-vl-72b-instruct',
+        //   },
+        //   { scale: 2, concurrency: 1 },
+        // );
         const parsedResult = await parsePdf(
           parsed.data.file_path,
           {
             baseURL: 'http://localhost:11434/v1/',
             model: 'gemma3:12b',
           },
-          { scale: 1 },
+          { scale: 1, concurrency: 1 },
         );
         return {
           content: [{ type: 'text', text: parsedResult.content }],
