@@ -20,5 +20,9 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
