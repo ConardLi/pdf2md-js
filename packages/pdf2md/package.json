@@ -1,0 +1,50 @@
+{
+  "name": "@tiny-tool/pdf2md",
+  "version": "2.0.0",
+  "repository": {
+    "url": "https://github.com/tiny-tool/pdf2md"
+  },
+  "description": "Convert PDF to Markdown using Node.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "rslib build",
+    "build:watch": "rslib build --watch"
+  },
+  "keywords": [
+    "pdf",
+    "markdown",
+    "converter",
+    "ocr"
+  ],
+  "author": "muzea <mr.muzea@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.69",
+    "@xsai/generate-text": "0.2.0-beta.3",
+    "fs-extra": "^11.3.0",
+    "pdfjs-dist": "^5.1.91"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@xsai/shared-chat": "0.2.0-beta.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist/*"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

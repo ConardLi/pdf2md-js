@@ -1,7 +1,7 @@
 # PDF2MD Node.js
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%3E%3D%2016.0.0-brightgreen" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen" alt="Node.js Version">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
@@ -20,17 +20,15 @@ A powerful Node.js tool for converting PDF documents to Markdown format using ad
 ## 🚀 Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/pdf2md.git
-cd pdf2md/pdf2md-node
-
 # Install dependencies
-npm install
+pnpm add pdf2md-js
+# or
+npm add pdf2md-js
 ```
 
 ## 📋 Requirements
 
-- Node.js 16.0.0 or higher
+- Node.js 20.0.0 or higher
 - API key for at least one of the supported vision models
 
 ## 🔧 Usage
@@ -38,7 +36,7 @@ npm install
 ### Basic Usage
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf } from 'pdf2md-js';
 
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',
@@ -107,19 +105,19 @@ The project includes several test scripts to verify functionality:
 
 ```bash
 # Test the full PDF to Markdown conversion process
-node test/testFullProcess.js
+pnpm vite-node test/testFullProcess.js
 
 # Test only the PDF to image conversion
-node test/testFullPageImages.js
+pnpm vite-node test/testFullPageImages.js
 
 # Test specific vision models
-node test/testModel.js
+pnpm vite-node test/testModel.js
 ```
 
 ## 📁 Project Structure
 
 ```
-pdf2md-node/
+pdf2md-js/
 ├── src/
 │   ├── index.js          # Main entry point
 │   ├── pdfParser.js      # PDF parsing module

@@ -1,0 +1,28 @@
+{
+  "name": "@tiny-tool/pdf2md-mcp",
+  "version": "2.0.0",
+  "bin": "dist/index.js",
+  "repository": {
+    "url": "https://github.com/tiny-tool/pdf2md"
+  },
+  "scripts": {
+    "build": "rslib build",
+    "build:watch": "rslib build --watch"
+  },
+  "author": "muzea <mr.muzea@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@tiny-tool/pdf2md": "workspace:*",
+    "express": "^5.1.0",
+    "zod": "^3.24.3",
+    "zod-to-json-schema": "^3.24.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

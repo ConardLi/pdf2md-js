@@ -1,7 +1,7 @@
 # PDF2MD Node.js
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%3E%3D%2016.0.0-brightgreen" alt="Node.js 版本">
+  <img src="https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen" alt="Node.js 版本">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="许可证">
 </p>
 
@@ -18,17 +18,15 @@
 ## 🚀 安装
 
 ```bash
-# 克隆仓库
-git clone https://github.com/yourusername/pdf2md.git
-cd pdf2md/pdf2md-node
-
-# 安装依赖
-npm install
+# Install dependencies
+pnpm add pdf2md-js
+# or
+npm add pdf2md-js
 ```
 
 ## 📋 系统要求
 
-- Node.js 16.0.0 或更高版本
+- Node.js 20.0.0 或更高版本
 - 至少一个支持的视觉模型的API密钥
 
 ## 🔧 使用方法
@@ -36,7 +34,7 @@ npm install
 ### 基本用法
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf } from 'pdf2md-js';
 
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',
@@ -106,19 +104,19 @@ const result = await parsePdf('path/to/your.pdf', options);
 
 ```bash
 # 测试完整的PDF到Markdown转换流程
-node test/testFullProcess.js
+pnpm vite-node test/testFullProcess.js
 
 # 仅测试PDF到图像的转换
-node test/testFullPageImages.js
+pnpm vite-node test/testFullPageImages.js
 
 # 测试特定视觉模型
-node test/testModel.js
+pnpm vite-node test/testModel.js
 ```
 
 ## 📁 项目结构
 
 ```
-pdf2md-node/
+pdf2md-js/
 ├── src/
 │   ├── index.js          # 主入口点
 │   ├── pdfParser.js      # PDF解析模块
