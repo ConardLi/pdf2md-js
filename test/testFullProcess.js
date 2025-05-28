@@ -23,11 +23,11 @@ const CONFIG = {
   outputDir: path.join(__dirname, 'output'),
 
   // API密钥 (从环境变量获取或手动设置)
-  apiKey: process.env.DOUBAO_API_KEY || '93863a67-2ad8-46e5-b2dd-e0d7503d78cb',
+  apiKey: process.env.DOUBAO_API_KEY || '',
 
   // 模型配置
   model: 'doubao-1.5-vision-pro-32k-250115',
-  endpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+  endpoint: 'https://ark.cn-beijing.volces.com/api/v3/',
 
   // 使用全页模式
   useFullPage: true,

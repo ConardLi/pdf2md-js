@@ -197,7 +197,12 @@ export class ModelClient {
     maxTokens: number,
     endpoint?: string
   ): Promise<string> {
-    const apiEndpoint = endpoint || 'https://api.openai.com/v1/chat/completions';
+    let apiEndpoint = endpoint || 'https://api.openai.com/v1/chat/completions';
+
+    //使用前过滤校验一下以防url拼接错误出现404
+    if (!apiEndpoint.includes('/chat/completions')) {
+      apiEndpoint = apiEndpoint.endsWith('/') ? `${apiEndpoint}chat/completions` : `${apiEndpoint}/chat/completions`;
+    }
 
     // 构建用户消息内容
     const userContent: MessageContent[] = [{ type: 'text', text: prompt }];
@@ -370,7 +375,12 @@ export class ModelClient {
     maxTokens: number,
     endpoint?: string
   ): Promise<string> {
-    const apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
+    //使用前过滤校验一下以防url拼接错误出现404
+    let apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
+
+    if (!apiEndpoint.includes('/chat/completions')) {
+      apiEndpoint = apiEndpoint.endsWith('/') ? `${apiEndpoint}chat/completions` : `${apiEndpoint}/chat/completions`;
+    }
 
     // 构建用户消息内容
     const userContent: MessageContent[] = [{ type: 'text', text: prompt }];
@@ -401,7 +411,7 @@ export class ModelClient {
     };
 
     const response = await this.makeHttpRequest(
-      endpoint?.endsWith('/chat/completions') ? apiEndpoint : `${apiEndpoint}/chat/completions`,
+      apiEndpoint,
       {
         method: 'POST',
         headers: {

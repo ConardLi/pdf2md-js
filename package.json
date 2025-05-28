@@ -1,7 +1,7 @@
 {
-  "name": "pdf-tool",
-  "version": "1.0.0",
-  "description": "PDF tool",
+  "name": "pdf2md-js",
+  "version": "1.0.2",
+  "description": "Convert PDF to Markdown using Node.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -44,9 +44,5 @@
   },
   "files": [
     "dist/*"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  }
+  ]
 }
