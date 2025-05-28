@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { parsePdf } from '../src/index.js';
+import { parsePdf } from '../dist/index.mjs';
 
 // 获取当前文件的目录
 const __filename = fileURLToPath(import.meta.url);
@@ -23,11 +23,11 @@ const CONFIG = {
   outputDir: path.join(__dirname, 'output'),
 
   // API密钥 (从环境变量获取或手动设置)
-  apiKey: process.env.DOUBAO_API_KEY || '',
+  apiKey: process.env.DOUBAO_API_KEY || '93863a67-2ad8-46e5-b2dd-e0d7503d78cb',
 
   // 模型配置
   model: 'doubao-1.5-vision-pro-32k-250115',
-  endpoint: 'https://ark.cn-beijing.volces.com/api/v3/',
+  endpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
 
   // 使用全页模式
   useFullPage: true,
