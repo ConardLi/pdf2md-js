@@ -26,6 +26,9 @@ cd pdf2md/pdf2md-node
 
 # Install dependencies
 npm install
+
+# Build
+npm run build
 ```
 
 ## 📋 Requirements

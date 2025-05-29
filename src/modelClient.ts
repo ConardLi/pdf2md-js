@@ -1,28 +1,124 @@
 /**
  * 模型客户端模块，用于处理不同视觉模型的API调用
  */
-import fs from 'fs-extra';
-import path from 'path';
+
 import https from 'https';
 import http from 'http';
-import { promisify } from 'util';
 
 // 默认角色提示词（中文版）
 const DEFAULT_ROLE_PROMPT = `你是一个PDF文档解析器，使用markdown和latex语法输出图片的内容。`;
+
+interface ModelConfig {
+  model?: string;
+  modelConfig?: Record<string, any>;
+  apiKey?: string;
+  baseUrl?: string;
+  openAiApicompatible?: boolean;
+}
+
+interface ProcessImageOptions {
+  model?: string;
+  rolePrompt?: string;
+  maxTokens?: number;
+  endpoint?: string;
+}
+
+interface MessageContent {
+  type: string;
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+  source?: {
+    type: string;
+    media_type: string;
+    data: string;
+  };
+  inline_data?: {
+    mime_type: string;
+    data: string;
+  };
+  [key: string]: any; // 允许其他属性
+}
+
+interface OpenAIRequest {
+  model: string;
+  messages: Array<{
+    role: string;
+    content: string | MessageContent[];
+  }>;
+  max_tokens: number;
+}
+
+interface ClaudeRequest {
+  model: string;
+  system: string;
+  max_tokens: number;
+  messages: Array<{
+    role: string;
+    content: MessageContent[];
+  }>;
+}
+
+interface GeminiRequestPart {
+  text?: string;
+  inline_data?: {
+    mime_type: string;
+    data: string;
+  };
+}
+
+interface GeminiRequest {
+  contents: Array<{
+    parts: Array<GeminiRequestPart>;
+  }>;
+  generation_config: {
+    max_output_tokens: number;
+  };
+}
+
+interface DoubaoRequest {
+  model: string;
+  messages: Array<{
+    role: string;
+    content: string | MessageContent[];
+  }>;
+  max_tokens?: number;
+}
+
+interface APIResponse {
+  choices?: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+  content?: Array<{
+    text: string;
+  }>;
+  candidates?: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
+    };
+  }>;
+  error?: {
+    message: string;
+  };
+}
 
 /**
  * 模型客户端类，处理与不同视觉模型的交互
  */
 export class ModelClient {
+  private config: ModelConfig;
+  private apiKey!: string | null;
+
   /**
    * 创建模型客户端实例
-   * @param {Object} config 配置对象
-   * @param {string} config.apiKey OpenAI API密钥
-   * @param {string} [config.baseUrl] 自定义API基础URL
-   * @param {string} [config.model='gpt-4-vision-preview'] 默认使用的模型
-   * @param {Object} [config.modelConfig={}] 模型特定配置
+   * @param config 配置对象
    */
-  constructor(config) {
+  constructor(config: ModelConfig) {
     this.config = {
       model: 'gpt-4-vision-preview',
       modelConfig: {},
@@ -37,43 +133,42 @@ export class ModelClient {
    * 初始化模型客户端
    * @private
    */
-  initClient() {
+  private initClient(): void {
     const { apiKey } = this.config;
 
     if (!apiKey) {
       throw new Error('必须提供API密钥');
     }
 
-    // 不再创建SDK实例，而是保存必要的配置信息用于API调用
     this.apiKey = apiKey;
   }
 
   /**
    * 处理图像并转换为Markdown文本
-   * @param {string} imagePath 图像文件路径
-   * @param {string} prompt 提示词
-   * @param {Object} [options={}] 附加选项
-   * @param {string} [options.model] 覆盖默认模型
-   * @param {string} [options.rolePrompt] 覆盖默认角色提示词
-   * @param {number} [options.maxTokens] 最大生成token数
-   * @param {string} [options.endpoint] 自定义API端点
-   * @returns {Promise<string>} Markdown文本
+   * @param imagePath 图像文件路径
+   * @param prompt 提示词
+   * @param options 附加选项
+   * @returns Markdown文本
    */
-  async processImage(imagePath, prompt, options = {}) {
-    const {
-      model = this.config.model,
-      rolePrompt = DEFAULT_ROLE_PROMPT,
-      maxTokens = 4096,
-      endpoint = this.config.baseUrl
-    } = options;
+  async processImage(
+    imagePath: Buffer|null,
+    prompt: string,
+    options: ProcessImageOptions = {}
+  ): Promise<string> {
+    const model = options.model || this.config.model;
+    if (!model) {
+      throw new Error('必须指定模型');
+    }
+    const rolePrompt = options.rolePrompt || DEFAULT_ROLE_PROMPT;
+    const maxTokens = options.maxTokens || 4096;
+    const endpoint = options.endpoint || this.config.baseUrl;
 
     // 读取图像文件
-    let base64Image = null;
+    let base64Image: string | null = null;
     if (imagePath) {
-      const imageBuffer = await fs.readFile(imagePath);
-      base64Image = imageBuffer.toString('base64');
+      //const imageBuffer = await fs.readFile(imagePath);
+      base64Image = imagePath.toString('base64');
     }
-
 
     // 根据不同模型类型调用对应API
     if (model.startsWith('gpt-4') || model.startsWith('gpt-3.5')) {
@@ -94,12 +189,23 @@ export class ModelClient {
    * 通过API调用OpenAI视觉模型
    * @private
    */
-  async callOpenAIAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint) {
-    // 使用OpenAI API
-    const apiEndpoint = endpoint || 'https://api.openai.com/v1/chat/completions';
+  private async callOpenAIAPI(
+    model: string,
+    rolePrompt: string,
+    prompt: string,
+    base64Image: string | null,
+    maxTokens: number,
+    endpoint?: string
+  ): Promise<string> {
+    let apiEndpoint = endpoint || 'https://api.openai.com/v1/chat/completions';
+
+    //使用前过滤校验一下以防url拼接错误出现404
+    if (!apiEndpoint.includes('/chat/completions')) {
+      apiEndpoint = apiEndpoint.endsWith('/') ? `${apiEndpoint}chat/completions` : `${apiEndpoint}/chat/completions`;
+    }
 
     // 构建用户消息内容
-    const userContent = [{ type: 'text', text: prompt }];
+    const userContent: MessageContent[] = [{ type: 'text', text: prompt }];
 
     // 如果有base64图片，添加图片内容
     if (base64Image) {
@@ -111,7 +217,7 @@ export class ModelClient {
       });
     }
 
-    const requestData = {
+    const requestData: OpenAIRequest = {
       model,
       messages: [
         {
@@ -123,7 +229,7 @@ export class ModelClient {
           content: userContent
         }
       ],
-      max_tokens: maxTokens
+      max_tokens: maxTokens as number
     };
 
     const response = await this.makeHttpRequest(apiEndpoint, {
@@ -139,19 +245,25 @@ export class ModelClient {
       throw new Error(`OpenAI API调用失败: ${response.error.message || JSON.stringify(response.error)}`);
     }
 
-    return response.choices[0].message.content;
+    return response.choices?.[0]?.message?.content || '';
   }
 
   /**
    * 通过API调用Claude视觉模型
    * @private
    */
-  async callClaudeAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint) {
-    // 使用Claude API
+  private async callClaudeAPI(
+    model: string,
+    rolePrompt: string,
+    prompt: string,
+    base64Image: string | null,
+    maxTokens: number,
+    endpoint?: string
+  ): Promise<string> {
     const apiEndpoint = endpoint || 'https://api.anthropic.com/v1/messages';
 
     // 构建消息内容
-    const messageContent = [{ type: 'text', text: prompt }];
+    const messageContent: MessageContent[] = [{ type: 'text', text: prompt }];
 
     // 如果有base64图片，添加图片内容
     if (base64Image) {
@@ -165,7 +277,7 @@ export class ModelClient {
       });
     }
 
-    const requestData = {
+    const requestData: ClaudeRequest = {
       model,
       system: rolePrompt,
       max_tokens: maxTokens,
@@ -181,6 +293,7 @@ export class ModelClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        //@ts-ignore
         'x-api-key': this.apiKey,
         'anthropic-version': '2023-06-01'
       },
@@ -191,19 +304,25 @@ export class ModelClient {
       throw new Error(`Claude API调用失败: ${response.error.message || JSON.stringify(response.error)}`);
     }
 
-    return response.content[0].text;
+    return response.content?.[0]?.text || '';
   }
 
   /**
    * 通过API调用Gemini视觉模型
    * @private
    */
-  async callGeminiAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint) {
-    // 使用Google Gemini API
+  private async callGeminiAPI(
+    model: string,
+    rolePrompt: string,
+    prompt: string,
+    base64Image: string | null,
+    maxTokens: number,
+    endpoint?: string
+  ): Promise<string> {
     const apiEndpoint = endpoint || `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`;
 
     // 构建消息部分
-    const parts = [
+    const parts: GeminiRequestPart[] = [
       { text: `${rolePrompt}\n${prompt}` }  // 合并系统提示和用户提示
     ];
 
@@ -211,13 +330,13 @@ export class ModelClient {
     if (base64Image) {
       parts.push({
         inline_data: {
-          mime_type: 'image/png', // 可以根据实际情况调整MIME类型
+          mime_type: 'image/png',
           data: base64Image
         }
       });
     }
 
-    const requestData = {
+    const requestData: GeminiRequest = {
       contents: [{
         parts: parts
       }],
@@ -241,19 +360,30 @@ export class ModelClient {
       throw new Error(`Gemini API调用失败: ${response.error.message || JSON.stringify(response.error)}`);
     }
 
-    return response.candidates[0].content.parts[0].text;
+    return response.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
   /**
    * 通过API调用豆包视觉模型
    * @private
    */
-  async callDoubaoAPI(model, rolePrompt, prompt, base64Image, maxTokens, endpoint) {
-    // 使用豆包API
-    const apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
+  private async callDoubaoAPI(
+    model: string,
+    rolePrompt: string,
+    prompt: string,
+    base64Image: string | null,
+    maxTokens: number,
+    endpoint?: string
+  ): Promise<string> {
+    //使用前过滤校验一下以防url拼接错误出现404
+    let apiEndpoint = endpoint || 'https://ark.cn-beijing.volces.com/api/v3';
+
+    if (!apiEndpoint.includes('/chat/completions')) {
+      apiEndpoint = apiEndpoint.endsWith('/') ? `${apiEndpoint}chat/completions` : `${apiEndpoint}/chat/completions`;
+    }
 
     // 构建用户消息内容
-    const userContent = [{ type: 'text', text: prompt }];
+    const userContent: MessageContent[] = [{ type: 'text', text: prompt }];
 
     // 如果有base64图片，添加图片内容
     if (base64Image) {
@@ -265,7 +395,7 @@ export class ModelClient {
       });
     }
 
-    const requestData = {
+    const requestData: DoubaoRequest = {
       model,
       messages: [
         {
@@ -277,34 +407,38 @@ export class ModelClient {
           content: userContent
         }
       ],
-      max_tokens: maxTokens  // 添加max_tokens参数
+      max_tokens: maxTokens as number
     };
 
-    const response = await this.makeHttpRequest(endpoint.endsWith('/chat/completions') ? apiEndpoint : `${apiEndpoint}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(JSON.stringify(requestData)),
-        'Authorization': `Bearer ${this.apiKey}`
-      },
-      body: JSON.stringify(requestData)
-    });
+    const response = await this.makeHttpRequest(
+      apiEndpoint,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(JSON.stringify(requestData)).toString(),
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify(requestData)
+      }
+    );
 
     if (response.error) {
       throw new Error(`豆包API调用失败: ${response.error.message || JSON.stringify(response.error)}`);
     }
 
-    return response.choices[0].message.content;
+    return response.choices?.[0]?.message?.content || '';
   }
 
   /**
    * 通用HTTP请求方法
-   * @param {string} url API端点URL
-   * @param {Object} options 请求选项
-   * @returns {Promise<Object>} API响应对象
    * @private
    */
-  makeHttpRequest(url, options) {
+  private async makeHttpRequest(url: string, options: {
+    method: string;
+    headers: Record<string, string>;
+    body?: string;
+  }): Promise<APIResponse> {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
       const client = urlObj.protocol === 'https:' ? https : http;
@@ -323,13 +457,14 @@ export class ModelClient {
 
         res.on('end', () => {
           try {
-            if (res.statusCode >= 200 && res.statusCode < 300) {
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
               const parsedData = JSON.parse(data);
               resolve(parsedData);
             } else {
               reject(new Error(`请求失败，状态码: ${res.statusCode}, 响应: ${data}`));
             }
           } catch (e) {
+            //@ts-ignore
             reject(new Error(`API响应解析失败: ${e.message}, 原始响应: ${data}`));
           }
         });
@@ -349,9 +484,8 @@ export class ModelClient {
 
   /**
    * 获取支持的模型列表
-   * @returns {Array<string>} 支持的模型列表
    */
-  getSupportedModels() {
+  getSupportedModels(): string[] {
     return [
       // OpenAI视觉模型
       'gpt-4-vision-preview',

@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { parsePdf } from '../src/index.js';
+import { parsePdf } from '../dist/index.mjs';
 
 // 获取当前文件的目录
 const __filename = fileURLToPath(import.meta.url);
