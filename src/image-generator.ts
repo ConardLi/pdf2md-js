@@ -11,6 +11,26 @@ import { createCanvas, Canvas } from '@napi-rs/canvas';
 export type PageImage = { index: number; data: Buffer };
 
 /**
+ * 获取PDF文档的页数
+ * @param pdfData PDF文件数据或路径
+ * @returns PDF文档的总页数
+ */
+export const getPageCount = async (pdfData: Buffer | string): Promise<number> => {
+  // 如果pdfData是字符串，则当作路径处理
+  let data: Uint8Array;
+  if (typeof pdfData === 'string') {
+    data = new Uint8Array(await fs.readFile(pdfData));
+  } else {
+    data = new Uint8Array(pdfData);
+  }
+
+  // 加载PDF文档并返回页数
+  const pdfDocument = await getDocument({ data }).promise;
+  return pdfDocument.numPages;
+};
+
+
+/**
  * 直接生成PDF文档的所有页面图像，不依赖区域识别
  * @param pdfData PDF文件数据或路径
  * @param outputDir 输出目录

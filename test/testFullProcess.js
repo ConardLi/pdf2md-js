@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { parsePdf } from '../dist/index.mjs';
+import { parsePdf, getPageNum } from '../dist/index.mjs';
 
 // 获取当前文件的目录
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +60,9 @@ async function testFullProcess() {
 
     console.log(`处理PDF文件: ${CONFIG.pdfPath}`);
     console.log(`使用模型: ${CONFIG.model}`);
+
+    //getPageNum 可以独立获取pdf的页数
+    console.log(`PDF文件一共:`+await getPageNum(CONFIG.pdfPath)+`页`);
 
     // 开始处理
     const startTime = Date.now();
