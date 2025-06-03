@@ -41,8 +41,13 @@ npm run build
 ### Basic Usage
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf, getPageCount } from './src/index.js';
 
+// Get PDF page count
+const pageCount = await getPageCount('path/to/your.pdf');
+console.log(`PDF has ${pageCount} pages`);
+
+// Convert PDF to Markdown
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',
   model: 'gpt-4-vision-preview',

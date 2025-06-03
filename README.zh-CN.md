@@ -36,8 +36,13 @@ npm install
 ### 基本用法
 
 ```javascript
-import { parsePdf } from './src/index.js';
+import { parsePdf, getPageCount } from './src/index.js';
 
+// 获取PDF页数
+const pageCount = await getPageCount('path/to/your.pdf');
+console.log(`PDF共有 ${pageCount} 页`);
+
+// 转换PDF为Markdown
 const result = await parsePdf('path/to/your.pdf', {
   apiKey: 'your-api-key',
   model: 'gpt-4-vision-preview',
