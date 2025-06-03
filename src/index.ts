@@ -4,7 +4,7 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { generateFullPageImages, PageImage } from './image-generator';
+import { generateFullPageImages, PageImage, getPageCount } from './image-generator';
 import { extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils';
 import ModelClient from './modelClient';
 import { DefaultPrompt, DefaultTextPrompt } from './const';
@@ -192,3 +192,13 @@ const processInParallel = async <T, R>(items: T[], processFunction: ProcessFunct
 
   return Promise.all(results);
 };
+
+/**
+ * 获取PDF文档的页数
+ * @param pdfData PDF文件数据或路径
+ * @returns PDF文档的总页数
+ */
+export const getPageNum = async (pdfData: Buffer | string): Promise<number> => {
+  const pdfPageCount = await getPageCount(pdfData);
+  return pdfPageCount ;
+}
