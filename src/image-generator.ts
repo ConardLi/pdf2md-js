@@ -1,11 +1,14 @@
 /**
  * 图像生成模块，负责将PDF区域转换为图像
  */
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+//import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import pkg from 'pdfjs-dist/legacy/build/pdf.js';
+const { getDocument } = pkg;
+import sharp from 'sharp';
 import type { PageViewport } from 'pdfjs-dist/types/src/display/display_utils.d.ts';
 import type { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api.d.ts';
 import fs from 'fs-extra';
-import { createCanvas, Canvas } from '@napi-rs/canvas';
+import { createCanvas, Canvas } from 'canvas';
 
 // 定义一些类型
 export type PageImage = { index: number; data: Buffer };
@@ -81,7 +84,7 @@ export const generateFullPageImages = async (pdfData: Buffer | string, outputDir
     }).promise;
 
     // 将canvas转换为图像并保存
-    const buffer = canvas.toBuffer('image/png');
+    const buffer = await sharp(canvas.toBuffer('image/png')).png().toBuffer();
 
     // 添加到结果数组
     pageImages.push({ index: pageIndex, data: buffer });
