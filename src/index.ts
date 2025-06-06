@@ -4,10 +4,10 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { generateFullPageImages, PageImage, getPageCount } from './image-generator';
-import { extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils';
-import ModelClient from './modelClient';
-import { DefaultPrompt, DefaultTextPrompt } from './const';
+import { generateFullPageImages, PageImage, getPageCount } from './image-generator.ts';
+import { extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils.ts';
+import ModelClient from './modelClient.ts';
+import { DefaultPrompt, DefaultTextPrompt } from './const.ts';
 
 interface ParseOptions {
   apiKey?: string;

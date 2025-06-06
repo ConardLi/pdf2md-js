@@ -1,6 +1,6 @@
 {
   "name": "pdf2md-js",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Convert PDF to Markdown using Node.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -27,9 +27,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.69",
     "fs-extra": "^11.3.0",
-    "pdfjs-dist": "^5.1.91"
+    "pdfjs-dist": "^3.11.174",
+    "canvas": "^2.11.2",
+    "sharp": "^0.33.1"
   },
   "packageManager": "pnpm@9.15.9+sha512.68046141893c66fad01c079231128e9afb89ef87e2691d69e4d40eee228988295fd4682181bae55b58418c3a253bde65a505ec7c5f9403ece5cc3cd37dcf2531",
   "devDependencies": {
@@ -40,7 +41,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "files": [
     "dist/*"
