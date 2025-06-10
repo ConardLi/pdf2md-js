@@ -1,17 +1,25 @@
 /**
  * 图像生成模块，负责将PDF区域转换为图像
  */
-//import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import pkg from 'pdfjs-dist/legacy/build/pdf.js';
-const { getDocument } = pkg;
-import sharp from 'sharp';
-import type { PageViewport } from 'pdfjs-dist/types/src/display/display_utils.d.ts';
-import type { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api.d.ts';
+import { PDFiumLibrary } from "@hyzyla/pdfium";
 import fs from 'fs-extra';
-import { createCanvas, Canvas } from 'canvas';
+import sharp from 'sharp';
 
 // 定义一些类型
 export type PageImage = { index: number; data: Buffer };
+
+
+async function renderFunction(options: { data: sharp.SharpInput | sharp.SharpInput[] | undefined; width: any; height: any; }) {
+  return await sharp(options.data, {
+    raw: {
+      width: options.width,
+      height: options.height,
+      channels: 4,
+    },
+  })
+  .png()
+  .toBuffer();
+}
 
 /**
  * 获取PDF文档的页数
@@ -27,9 +35,17 @@ export const getPageCount = async (pdfData: Buffer | string): Promise<number> =>
     data = new Uint8Array(pdfData);
   }
 
+  const library = await PDFiumLibrary.init();
+
+  const document = await library.loadDocument(data);
+
+  const pageCount = document.getPageCount();
+
+  document.destroy();
+  library.destroy();
+
   // 加载PDF文档并返回页数
-  const pdfDocument = await getDocument({ data }).promise;
-  return pdfDocument.numPages;
+  return pageCount;
 };
 
 
@@ -53,42 +69,35 @@ export const generateFullPageImages = async (pdfData: Buffer | string, outputDir
   }
 
   // 加载PDF文档
-  const pdfDocument: PDFDocumentProxy = await getDocument({ data }).promise;
-  const numPages = pdfDocument.numPages;
+  const library = await PDFiumLibrary.init();
+
+  const document = await library.loadDocument(data);
+
+  const numPages = document.getPageCount();
+
   console.log(`PDF文档共 ${numPages} 页`);
 
   // 存储生成的图像路径
   const pageImages: PageImage[] = [];
 
   // 处理每一页
-  for (let i = 0; i < numPages; i++) {
-    const pageIndex = i + 1;
+  for (const page of document.pages()) {
+    const pageIndex = page.number + 1;
     console.log(`处理第 ${pageIndex} 页...`);
 
-    // 获取页面
-    const page: PDFPageProxy = await pdfDocument.getPage(pageIndex);
-    const viewport: PageViewport = page.getViewport({ scale });
+    // 将PDF页面渲染为PNG图片
+    const image = await page.render({
+      scale: 3, // 3倍缩放（默认72 DPI）
+      render: renderFunction,  // sharp函数，用于将原始位图数据转换为PNG
+    });
 
-    // 创建canvas
-    const canvas: Canvas = createCanvas(viewport.width, viewport.height);
-    const context = canvas.getContext('2d') as any as CanvasRenderingContext2D;
+    pageImages.push({ index: pageIndex, data: Buffer.from(image.data) });
 
-    // 填充白色背景
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, viewport.width, viewport.height);
-
-    // 渲染页面
-    await page.render({
-      canvasContext: context,
-      viewport: viewport,
-    }).promise;
-
-    // 将canvas转换为图像并保存
-    const buffer = await sharp(canvas.toBuffer('image/png')).png().toBuffer();
-
-    // 添加到结果数组
-    pageImages.push({ index: pageIndex, data: buffer });
+    // 将PNG图片保存到输出文件夹
+    //await fs.writeFile(`output/${page.number}.png`, Buffer.from(image.data));
   }
 
+  document.destroy();
+  library.destroy();
   return pageImages;
 };
