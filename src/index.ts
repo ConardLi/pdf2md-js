@@ -4,7 +4,7 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { generateFullPageImages, PageImage, getPageCount } from './image-generator';
+import { generateFullPageImages, PageImage, getPageCount, savePdfAsImages } from './image-generator';
 import { extractMdFromLLMOutput, adjustMarkdownHeadings, getOldMarkdownHeadings } from './utils';
 import ModelClient from './modelClient';
 import { DefaultPrompt, DefaultTextPrompt } from './const';
@@ -202,3 +202,6 @@ export const getPageNum = async (pdfData: Buffer | string): Promise<number> => {
   const pdfPageCount = await getPageCount(pdfData);
   return pdfPageCount ;
 }
+
+// 导出PDF截图功能
+export { savePdfAsImages } from './image-generator';
